@@ -3,8 +3,7 @@
   <head>
 
     <title>EthOffline</title>
-
-  </head>
+ </head>
 
   <body>
 
@@ -58,7 +57,80 @@
 
     </style>
 
+<script>
+  function changeSignButton(option, optionText) {
+    document.getElementById('signTransaction').setAttribute('option-data',option);
+    document.getElementById('signTransaction').setAttribute('value',optionText);
+
+    if (option == "send") {
+        
+      document.getElementById('data').style.display = "none";
+      document.getElementById('dataKind').style.display = "none";
+      document.getElementById('dataText').style.display = "none";
+
+      document.getElementById('to').style.display = "initial";
+      document.getElementById('toText').style.display = "initial";
+
+      document.getElementById('value').style.display = "initial";
+      document.getElementById('valueUnit').style.display = "initial";
+      document.getElementById('valueText').style.display = "initial";
+
+        } else if (option == "smartcontract") {
+         
+      document.getElementById('data').style.display = "initial";
+      document.getElementById('dataKind').style.display = "initial";
+      document.getElementById('dataText').style.display = "initial";
+
+      document.getElementById('to').style.display = "initial";
+      document.getElementById('toText').style.display = "initial";
+
+      document.getElementById('value').style.display = "initial";
+      document.getElementById('valueUnit').style.display = "initial";
+      document.getElementById('valueText').style.display = "initial";
+
+        } else if (option == "deploy") {
+          
+      document.getElementById('data').style.display = "initial";
+      document.getElementById('dataKind').style.display = "initial";
+      document.getElementById('dataText').style.display = "initial";
+
+      document.getElementById('to').style.display = "none";
+      document.getElementById('toText').style.display = "none";
+
+      document.getElementById('value').style.display = "none";
+      document.getElementById('valueUnit').style.display = "none";
+      document.getElementById('valueText').style.display = "none";
+        }
+  }
+  
+
+  function downloadFile() {
+    
+    var obj = document.getElementById('signedTransactionData').innerHTML;
+    var nonceTxt = document.getElementById('nonce').value;
+    var addTxt = document.getElementById('from').value.substring(0,8);
+    console.log(addTxt);
+    console.log(nonceTxt);
+    var d = new Date();
+    var n = d.toISOString();
+    var filename = nonceTxt+"-"+addTxt+"-"+n+".txt";
+    var blob = new Blob([obj], {type: 'text/plain'});
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename);
+    } else{
+        var e = document.createEvent('MouseEvents'),
+        a = document.createElement('a');
+        a.download = filename;
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+        e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        a.dispatchEvent(e);
+    }
+}
+  </script>
     <div style="margin: 0px auto; width: 50%; display: block;">
+
+      
 
       <h1>EthOffline | Transaction Signer</h1>
 
@@ -72,6 +144,17 @@
         Do not use this tool with your actual private keys while connected to the internet.
       </div>
 
+
+      <h3 style="margin-bottom: 0;"><u>Select a transaction type :</u></h3>
+      <input onclick="changeSignButton('send', 'Sign Transaction')"  type="radio" id="send" name="txType" value="send" style="width: 15px;" checked>
+      <label for="send">Send ETH to another address (simple transaction)</label><br>
+      <input onclick="changeSignButton('smartcontract', 'Sign Smart Contract Interaction')"  type="radio" id="smartcontract" name="txType" value="smartcontract" style="width: 15px;">
+      <label for="smartcontract">Interact with a smart contract</label><br>
+      <input onclick="changeSignButton('deploy','Sign Smart Contract Deployment')" type="radio" id="deploy" name="txType" value="deploy" style="width: 15px;">
+      <label for="deploy">Deploy Smart Contract</label><br>
+
+     
+
       <div id="privateKeyWrapper">
 
         <br />
@@ -79,39 +162,26 @@
         <label>Private Key</label> <br />
         <input type="password" id="privatekey" placeholder="Example: 0xe230d63e82551f42a1d00ee75448e01f5370ba387998835415983144a46bd504" autofocus /> <br /> <br />
 
-        <small>
-          Please provide your Etheruem private key here, it must be hex '0x...' prefixed (this is not your Bip39 seed or passphrase).
-
-          A QR code will be prompted if you have entered a valid private key.
-
-          If your private key is valid, your private key data will be hidden to protect it from any cameras or devices.
-        </small>
-
-        <br /><br />
-
-        <small>
-
-          If you're using Ian Coleman's Bip39 Tool, open that tool offline.
-
-          Enter your seed and passphrase, scroll down and copy your Private Key on the right hand side of the page, then paste it above.
-        </small>
 
       </div>
 
-      <div id="transactionFields" style="display: none;">
+      <div id="transactionFields" style="display: initial;">
 
-        <br /><br />
+
 
         <label>From Address (your account address)</label> <br />
-        <input type="text" id="from" disabled="disabled" /> <br /> <br />
+        <input type="text" id="from" disabled="disabled" placeholder="Your address will appear here after adding your private key"/> <br /> <br />
 
-        <br /><br />
+
+        <label id="toText">To Address</label> <br />
+        <input type="text" id="to" placeholder="Example: 0x325e4f509e582cfeD31b767bc9F992f5b86f0e67" /> <br /> <br />
+
 
         <label>Nonce</label> <br />
-        <input type="number" id="nonce" placeholder="Example: 1" /> <br /> <br />
+        <input type="number" id="nonce" placeholder="Start at 0 for new address, then +1 each OUT transactions." /> <br /> <br />
 
         <label>Gas</label> <br />
-        <input type="number" id="gas" class="unitValue" placeholder="Example: 500000 [wei]" value="500000" />
+        <input type="number" id="gas" class="unitValue" placeholder="Example: 500000. Maximum gas on MainNet : 17 500 000" value="500000" />
 
         <select id="gasUnit" class="unitSelector" data-target="gas">
           <option value="wei" selected="selected">wei</option>
@@ -134,17 +204,13 @@
           <option value="ether">ether</option>
         </select>
 
-        <div id="transactionDataWrapper" style="display: none;">
+        <div id="transactionDataWrapper" style="display: initial;">
 
-          <br /> <br />
 
-          <br /> <br />
+          <br /><br />
 
-          <label>To Address</label> <br />
-          <input type="text" id="to" placeholder="Example: 0x325e4f509e582cfeD31b767bc9F992f5b86f0e67" /> <br /> <br />
-
-          <label>Value</label> <br />
-          <input type="number" id="value" class="unitValue" placeholder="Example: 45 [ether]" value="0" />
+          <label id="valueText">Value</label> <br />
+          <input type="number" id="value" class="unitValue" placeholder="Example: 2 [ether]" value="0" />
 
           <select id="valueUnit" class="unitSelector" data-target="value">
             <option value="wei">wei</option>
@@ -155,14 +221,16 @@
           </select>
 
           <br /> <br />
+          <label>Chain ID</label> <br />
+          <input type="number" id="chainId" placeholder="Mainnet=1, Ropsten=3, Rinkeby=4, Optimism=10... (https://chainid.network/)"/>
 
           <br /> <br />
 
-          <label>Data</label> <br />
+          <label id="dataText" style="display:none;">Data</label> <br />
 
-          <select id="dataKind" class="dataKindSelector" style="width: 99%;">
+          <select id="dataKind" class="dataKindSelector" style="width: 99%;display:none;">
             <option value="noData">No Data</option>
-            <option value="custom">Custom Data (experts only)</option>
+            <option value="custom" selected>Custom Data (experts only)</option>
             <option disabled></option>
             <option disabled>Gnosis Multi-Signature Wallet</option>
             <option value="submitTransaction">&nbsp;&nbsp;&nbsp;&nbsp;Submit Transaction</option>
@@ -176,82 +244,44 @@
 
           <div id="dataWrapper">
 
-
-
           </div>
 
           <br />
 
-          <input type="hidden" id="data" placeholder="data" value="0x" /> <br /> <br />
+          <input id="data" placeholder="Date must be HEX and start with 0x" value="0x" style="display:none;"/> <br /> <br />
 
         </div>
 
-        <br /><br /><br /><br />
 
-        <input type="button" id="signTransaction" value="Sign Transaction" />
+        <input type="button" id="signTransaction" value="Sign Transaction" option-data="send"/>
 
       </div>
 
 
       <br /><br />
 
-      <div id="result" style="display: none;"></div>
+      <div id="result" style="display: none; margin-bottom:20px;"></div>
 
-      <div>
-        <br /><br />
-
-        <h2>WARNING</h2>
-
-        <h4>Only use this Tool Offline on a safe computer. This tool is not meant to handle private keys on a computer or mobile device connected to the internet.</h4>
-
-        <h2>License</h2>
-
-        <p>Please refer to the software license for more detail.</p>
-
-        <p>The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.</p>
-
-        <h2>About</h2>
-
-        <h4>This tool is produced by the EthJS team using EthJS libraries. Please contact the ethereumjs community for more details.</h4>
-
-        <h2>Hash Verification</h2>
-
-        <h4>Please verify this tool by using a sha256sum and checking the release information at: https://github.com/ethjs/ethjs.github.io/releases.</h4>
-
-        <h2>Offline Usage</h2>
-
-        <p>You can use this tool without having to be online.</p>
-
-        <p>In your browser, select file save-as, and save this page as a file.</p>
-
-        <p>Double-click that file to open it in a browser on any offline computer.</p>
-
-        <p>Alternatively, download the file from the repository - <a href="https://github.com/ethjs/ethjs.github.io" target="_blank">https://github.com/ethjs/ethjs.github.io</a></p>
-
-        <h2>Open-Source</h2>
-
-        <p>This project is <b>100% open-source code</b></p>
-
-        <p>Get the source code from the repository - <a href="https://github.com/ethjs/ethjs.github.io" target="_blank">https://github.com/ethjs/ethjs.github.io</a></p>
-
-        <br /><br />
-      </div>
 
     </div>
 
-    <div id="signedTransactionDataWrapper" style="position: fixed; color: #666; z-index: 5000; top: 0px; bottom: 0px; right: 0px; left: 0px; display: none; background: rgba(0,0,0,1); text-align: center; padding-top: 30px;">
+    <div id="signedTransactionDataWrapper" style=" color: rgb(0, 0, 0); z-index: 5000; top: 0px; bottom: 0px; right: 0px; left: 0px; display: none; background: rgb(127, 214, 92); text-align: center; padding-top: 30px;">
 
-      <div class="scrollable">
+      
 
         <h3>Raw Signed Transaction Data</h3>
 
-        <textarea id="rawSignedTransactionData" style="width: 500px;"></textarea>
+        <textarea id="rawSignedTransactionData" style="width: 500px;height: 147px;"></textarea>
 
         <br /><br />
 
-        <h3>Signed Transaction Data</h3>
+        <h3>Signed Transaction Data</h3><input type="button" onclick="downloadFile();" value="Download" style="width: 88px;
+        height: 22px;
+        padding: 1px;
+        margin: -13px;
+        position: absolute;">
 
-        <textarea id="signedTransactionData" style="width: 500px;"></textarea>
+        <textarea id="signedTransactionData" style="width: 500px;height: 140px;"></textarea>
 
         <br /><br />
 
@@ -267,7 +297,7 @@
 
         <br /><br />
 
-      </div>
+      
 
     </div>
 
@@ -418,6 +448,7 @@ Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
  * Export kMaxLength after typed array support is determined.
  */
 exports.kMaxLength = kMaxLength()
+
 
 function typedArraySupport () {
   try {
@@ -44441,8 +44472,8 @@ module.exports = __webpack_require__(9);
 
     function result(val) {
       el('#result').style.display = 'block';
+      el('#result').style.backgroundColor = 'firebrick';
       el('#result').innerHTML = val;
-      el('#valueUnit').scrollIntoView();
     }
 
     function padToEven(str) {
@@ -44583,10 +44614,10 @@ module.exports = __webpack_require__(9);
 
       el('#from').value = address;
       el('#addressValue').innerHTML = address;
-      el('#privateKeyWrapper').style.display = 'none';
+      el('#privateKeyWrapper').style.display = 'initial';
       el('#result').style.display = 'none';
       el('#transactionFields').style.display = 'block';
-      el('#addressQRWrapper').style.display = 'block';
+      el('#addressQRWrapper').style.display = 'none';
     }
 
     function closeAddressQRCode() {
@@ -44648,18 +44679,19 @@ module.exports = __webpack_require__(9);
         gas: formatNumberData(rawData.gas),
         gasPrice: formatNumberData(rawData.gasPrice),
         nonce: formatNumberData(rawData.nonce),
+        chainId: formatNumberData(rawData.chainId),
         data: rawData.data,
       }), null, 2);
     }
 
     function showSignedTransactionData(signedTxData, rawSignedTxData) {
       result('Transaction successfully signed.');
+      el('#result').style.backgroundColor = 'chartreuse';
       el('#rawSignedTransactionData').innerHTML = '';
       el('#signedTransactionData').innerHTML = '';
       el('#signedTransactionDataWrapper').style.display = 'block';
       el('#signedTransactionData').innerHTML = signedTxData;
       el('#rawSignedTransactionData').innerHTML = formatTransactionData(rawSignedTxData);
-      el('#signedTransactionDataQRCode').scrollIntoView();
 
       const signedTransactionQRCode = new QRious({
         element: document.getElementById('signedTransactionDataQRCode'),
@@ -44698,6 +44730,7 @@ module.exports = __webpack_require__(9);
     }
 
     function signTransaction() {
+      var options = document.getElementById("signTransaction").getAttribute("option-data");
       try {
         const privateKey = handleValue(el('#privateKey').value);
         const to = handleValue(el('#to').value);
@@ -44711,25 +44744,47 @@ module.exports = __webpack_require__(9);
         const gasPriceUnit = handleValue(el('#gasPriceUnit').value);
         const gasPrice = Eth.toWei(handleValue(el('#gasPrice').value), gasPriceUnit).toString(10);
 
+        const chainId = handleValue(el('#chainId').value);
+
         const nonce = handleValue(el('#nonce').value);
         const data = transactionData();
 
-        if (!data) { return; }
+        let rawTransactionData = {};
+        if (options == "send") {
+          rawTransactionData = {
+            gas: new Eth.BN(gas, 10),
+            gasPrice: new Eth.BN(gasPrice, 10),
+            nonce: new Eth.BN(nonce, 10),
+            chainId: chainId,
+            to:to,
+            value:value
+          };
 
-        const dataError = checkDataForErrors(privateKey, to, value, gas, gasPrice, nonce, data);
-
-        if (dataError) {
-          result('Error with transaction data: ' + String(dataError));
-          return;
-        } else {
-          const rawTransactionData = {
-            to: to,
-            value: new Eth.BN(value, 10),
+        } else if (options == "smartcontract") {
+          rawTransactionData = {
             gas: new Eth.BN(gas, 10),
             gasPrice: new Eth.BN(gasPrice, 10),
             nonce: new Eth.BN(nonce, 10),
             data: data,
+            chainId: chainId,
+            to: to,
+            value:value,
           };
+        } else if (options == "deploy") {
+          rawTransactionData = {
+            gas: new Eth.BN(gas, 10),
+            gasPrice: new Eth.BN(gasPrice, 10),
+            nonce: new Eth.BN(nonce, 10),
+            data: data,
+            chainId: chainId,
+          };
+        }
+
+
+
+
+
+
           const signedTxData = ethSigner.sign(Object.assign({}, rawTransactionData), privateKey);
 
           const basicSignedTxDataErrors = checkBasicSignedTxErrors(signedTxData);
@@ -44740,7 +44795,7 @@ module.exports = __webpack_require__(9);
           }
 
           showSignedTransactionData(signedTxData, rawTransactionData);
-        }
+        
 
       } catch (transactionError) {
         result('Error while processing transaction data: ' + String(transactionError));
